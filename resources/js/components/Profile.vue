@@ -9,7 +9,7 @@
             <h5 class="widget-user-desc text-right">Web Designer</h5>
           </div>
           <div class="widget-user-image">
-            <img class="img-circle" src="" alt="User Avatar">
+            <img class="img-circle" :src="getProfilePhoto()" alt="User Avatar">
           </div>              
         </div>                
       </div>
@@ -32,38 +32,42 @@
                 <div class="form-group row">
                   <label for="inputName" class="col-sm-2 col-form-label">Name</label>
                   <div class="col-sm-10">
-                    <input type="text" v-model="form.name" class="form-control" id="inputName" placeholder="Name">
+                    <input type="text" v-model="form.name" class="form-control" id="inputName" placeholder="Name" :class="{ 'is-invalid': form.errors.has('name') }">
+                    <has-error :form="form" field="name"></has-error>
                   </div>
                 </div>
                 <div class="form-group row">
                   <label for="inputEmail" class="col-sm-2 col-form-label">Email</label>
                     <div class="col-sm-10">
-                      <input type="email" v-model="form.email" class="form-control" id="inputEmail" placeholder="Email">
+                      <input type="email" v-model="form.email" class="form-control" id="inputEmail" placeholder="Email" :class="{ 'is-invalid': form.errors.has('email') }">
+                      <has-error :form="form" field="email"></has-error>
                     </div>
                 </div>
                       
                 <div class="form-group row">
                   <label for="inputExperience" class="col-sm-2 col-form-label">Experience</label>
                   <div class="col-sm-10">
-                    <textarea class="form-control" id="inputExperience" placeholder="Experience"></textarea>
+                    <textarea class="form-control" v-model="form.bio" id="inputExperience" placeholder="Experience" :class="{ 'is-invalid': form.errors.has('bio') }"></textarea>
+                    <has-error :form="form" field="bio"></has-error>
                   </div>
                 </div>
                 <div class="form-group row">
                   <label for="profilePhoto" class="col-sm-2 col-form-label">Profile Photo</label>
                   <div class="col-sm-10">
-                    <input type="file" class="form-input" id="profilePhoto" name="photo">
+                    <input type="file" @change="updateProfile" class="form-input" id="profilePhoto" name="photo">
                   </div>
                 </div>
                 <div class="form-group row">
                   <label for="inputPassword" class="col-sm-2 col-form-label">Password (Leave empty if not changing)</label>
                   <div class="col-sm-10">
-                    <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+                    <input type="password" v-model="form.password" class="form-control" id="inputPassword" placeholder="Password" :class="{ 'is-invalid': form.errors.has('password') }">
+                    <has-error :form="form" field="password"></has-error>
                   </div>
                 </div>
                       
                 <div class="form-group row">
                   <div class="offset-sm-2 col-sm-10">
-                    <button type="submit" class="btn btn-success">Update</button>
+                    <button type="submit" @click.prevent="updateInfo" class="btn btn-success">Update</button>
                   </div>
                 </div>
               </form>
@@ -95,6 +99,42 @@ import Form from 'vform'
         })
       }
     },
+    methods: {
+      getProfilePhoto(){
+        let photo = (this.form.photo.length > 200) ? this.form.photo : "img/profile/"+ this.form.photo ;
+        return photo;
+      },
+      updateProfile(e){
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        let limit = 1024 * 1024 * 2;
+        if(file['size'] > limit){
+          swal({
+            type: 'error',
+            title: 'Oops...',
+            text: 'You are uploading a large file',
+          })
+          return false;
+        }
+        reader.onloadend = (file) => {
+          this.form.photo = reader.result;
+        }
+        reader.readAsDataURL(file);
+      },
+      updateInfo(){
+        this.$Progress.start();
+        if(this.form.password == ''){
+          this.form.password = undefined;
+        }
+        this.form.put('api/profile')
+        .then(() => {
+          this.$Progress.finish();
+        })
+        .catch(() => {
+          this.$Progress.fail();
+        })
+      }
+    },
     mounted() {
       console.log('Component mounted.')
     },
@@ -108,6 +148,6 @@ import Form from 'vform'
 	.widget-user-header{
 		background-position: center;
 		background-size: cover;
-		height: 250px;
+		height: 250px !important;
 	}
 </style>
