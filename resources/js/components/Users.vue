@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="row mt-4">
+    <div class="row mt-4" v-if="$gate.isAdmin()">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
@@ -219,15 +219,18 @@
 									Fire.$emit("AfterCreate");
 								})
 								.catch(() => {
-									swal("Failed!!", "There`s something wrong", "warning");
+									swal.fire("Failed!!", "There`s something wrong", "warning");
 								});
 						}
 					});
 			},
       loadUsers() {
-        axios.get("api/user").then(({ data }) => {
-					this.users = data.data;
-				});
+        if(this.$gate.isAdmin()){
+          axios.get("api/user").then(({ data }) => {
+            this.users = data.data;
+          });
+        }
+        
 			},
 			createUser(){
 				this.$Progress.start();

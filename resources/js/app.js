@@ -33,6 +33,9 @@ Vue.use(VueProgressBar, {
 })
 // form validation
 import { Form, HasError, AlertError } from 'vform'
+// user authentication
+import Gate from './Gate'
+Vue.prototype.$gate = new Gate(window.user)
 
 window.Form = Form;
 
